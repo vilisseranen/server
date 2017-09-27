@@ -129,6 +129,7 @@ use OCP\Share;
 use OCP\Share\IShareHelper;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Server
@@ -344,6 +345,8 @@ class Server extends ServerContainer implements IServerContainer {
 				$defaultTokenProvider = null;
 			}
 
+			$dispatcher = $c->getEventDispatcher();
+
 			$userSession = new \OC\User\Session($manager, $session, $timeFactory, $defaultTokenProvider, $c->getConfig(), $c->getSecureRandom(), $c->getLockdownManager());
 			$userSession->listen('\OC\User', 'preCreateUser', function ($uid, $password) {
 				\OC_Hook::emit('OC_User', 'pre_createUser', array('run' => true, 'uid' => $uid, 'password' => $password));
@@ -352,9 +355,10 @@ class Server extends ServerContainer implements IServerContainer {
 				/** @var $user \OC\User\User */
 				\OC_Hook::emit('OC_User', 'post_createUser', array('uid' => $user->getUID(), 'password' => $password));
 			});
-			$userSession->listen('\OC\User', 'preDelete', function ($user) {
+			$userSession->listen('\OC\User', 'preDelete', function ($user) use ($dispatcher) {
 				/** @var $user \OC\User\User */
 				\OC_Hook::emit('OC_User', 'pre_deleteUser', array('run' => true, 'uid' => $user->getUID()));
+				$dispatcher->dispatch('OCP\IUser::preDelete', new GenericEvent($user));
 			});
 			$userSession->listen('\OC\User', 'postDelete', function ($user) {
 				/** @var $user \OC\User\User */
