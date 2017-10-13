@@ -33,6 +33,13 @@ if (version_compare(PHP_VERSION, '5.6.0') === -1) {
 	return;
 }
 
+// Show warning if > PHP 7.2 is used as Nextcloud is not compatible with > PHP 7.2 for now
+if (version_compare(PHP_VERSION, '7.3.0') !== -1) {
+	echo 'This version of Nextcloud is not compatible with > PHP 7.2.<br/>';
+	echo 'You are currently running ' . PHP_VERSION . '.';
+	return;
+}
+
 try {
 
 	require_once __DIR__ . '/lib/base.php';
