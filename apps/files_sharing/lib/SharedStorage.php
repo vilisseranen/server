@@ -40,6 +40,7 @@ use OCP\Constants;
 use OCP\Files\Cache\ICacheEntry;
 use OCP\Files\NotFoundException;
 use OCP\Files\Storage\IStorage;
+use OCP\Files\StorageNotAvailableException;
 use OCP\Lock\ILockingProvider;
 use OC\User\NoUserException;
 
@@ -114,6 +115,7 @@ class SharedStorage extends \OC\Files\Storage\Wrapper\Jail implements ISharedSto
 			return;
 		}
 		$this->initialized = true;
+
 		try {
 			Filesystem::initMountPoints($this->superShare->getShareOwner());
 			$sourcePath = $this->ownerView->getPath($this->superShare->getNodeId());
@@ -357,6 +359,8 @@ class SharedStorage extends \OC\Files\Storage\Wrapper\Jail implements ISharedSto
 	 * @return Cache
 	 */
 	public function getCache($path = '', $storage = null) {
+		$this->init();
+
 		if ($this->cache) {
 			return $this->cache;
 		}
