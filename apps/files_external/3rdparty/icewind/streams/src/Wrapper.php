@@ -80,7 +80,20 @@ abstract class Wrapper implements File, Directory {
 	}
 
 	public function stream_read($count) {
-		return fread($this->source, $count);
+    $result = fread($this->source, $count);
+
+    $bytesReceived = strlen($result);
+    $bytesMore = 0;
+    while (strlen($result) > 0 && $bytesReceived < $count && !$this->stream_eof()) {
+      $bytesMore = $bytesReceived;
+      $result .= fread($this->source, $count - $bytesReceived);
+      $bytesReceived = strlen($result);
+      if ($bytesReceived == $bytesMore) {
+        $this->stream_close();
+        return $result;
+      }
+    return $result;
+    }
 	}
 
 	public function stream_write($data) {
